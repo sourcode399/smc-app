@@ -1,0 +1,16 @@
+# Tầng dữ liệu
+pandas>=2.0
+numpy>=1.24
+ccxt>=4.0          # crypto (Binance, Bybit, OKX...)
+yfinance>=0.2      # cổ phiếu, forex, vàng/dầu, chỉ số (Yahoo)
+vnstock>=3.2       # chứng khoán Việt Nam (HOSE/HNX/UPCOM)
+
+# Giao diện
+streamlit>=1.30
+plotly>=5.18
+
+# AI (tuỳ chọn) — diễn giải & hỏi đáp
+anthropic>=0.40
+
+# Database cloud (Supabase) cho cảnh báo trên GitHub Actions
+psycopg2-binary>=2.9
