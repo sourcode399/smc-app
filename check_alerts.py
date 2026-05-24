@@ -19,6 +19,10 @@ from smc.data import get_candles
 from smc.decision import decide
 from smc import db
 from smc.notify import send_telegram
+from smc.engine import analyze
+from smc.wyckoff import analyze_wyckoff
+from smc.confluence import score_confluence
+from smc.verdict import summarize as summarize_verdict
 
 
 def _fmt(p: float) -> str:
@@ -46,11 +50,21 @@ def check_one(w) -> str | None:
         if db.already_alerted(w.id, p.direction, entry_mid):
             return None
         db.log_alert(w.id, p.direction, entry_mid)
+
+        # nhận định tổng hợp (đồng thuận / mâu thuẫn)
+        res = analyze(df)
+        wy = analyze_wyckoff(df)
+        conf = score_confluence(df, res, d)
+        vd = summarize_verdict(d, wy, conf)
+        icon = {"green": "🟢", "red": "🔴", "yellow": "🟡"}[vd.color]
+
         return (f"🔔 <b>{w.name}</b> ({w.symbol}) — {w.timeframe}\n"
                 f"Giá <b>{_fmt(last)}</b> đang GẦN vùng vào ({dist:.2f}%)\n"
                 f"Lệnh gợi ý: <b>{p.direction}</b>\n"
                 f"Vùng vào: {_fmt(p.entry_bottom)}–{_fmt(p.entry_top)}\n"
                 f"SL: {_fmt(p.stoploss)} | TP1: {_fmt(p.takeprofit)} | R:R {p.rr}\n"
+                f"{icon} Tổng hợp: <b>{vd.direction} · {vd.level.upper()}</b>\n"
+                f"{vd.advice}\n"
                 f"⚠️ Chỉ là gợi ý — tự xem chart + quản lý vốn trước khi vào.")
     except Exception as e:
         print(f"  [lỗi {w.symbol}] {e}", file=sys.stderr)
